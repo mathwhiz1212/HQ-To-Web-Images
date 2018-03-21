@@ -22,43 +22,84 @@
 #Replace with proper directory.
 #You can also replace the following line of code with: 'read -p "Enter path:" VIDEOS' (Don't include the single quotes.) if you want the script to ask you for a directory so you won't have to edit this file if you want to change the directory. (Not as safe.)
 
-PICTURES=~/Desktop/images-to-convert
+version="v1.1"
+
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+
+  case $key in
+    --init)
+    init=1
+    shift # past argument
+    ;;
+    --dir)
+    dir=$2
+    shift # past argument
+    ;;
+    -h|help)
+
+    exit 1
+    ;;
+    -v|version)
+    echo "Images $version"
+    exit 1
+    ;;
+    *)
+    # unknown option
+    if test -z "${unknown}"
+    then
+      unknown=$1
+    else
+      exit 1
+    fi
+    ;;
+  esac
+  shift # past argument or value
+done
+
+if test $init = 1
+then
+
+  sudo apt-get install imagemagick cwebp jpegoptim -y
+
+fi
 
 #Resizes all JPEG pictures in the directory to 25% of their size.
 
 echo "Resizing images in the directory to 25% of their original size."
-find "$PICTURES" -name '*.jpg' -exec sh -c 'convert -resize 25% "$0" "${0%%.jpg}.jpg"' {} \;
+find "$dir" -name '*.jpg' -exec sh -c 'convert -resize 25% "$0" "${0%%.jpg}.jpg"' {} \;
 
 #Same as above but with the .jpeg file extension instead of the .jpg file extension. This does nothing if they are all in the .jpg file extension.
 
-find "$PICTURES" -name '*.jpeg' -exec sh -c 'convert -resize 25% "$0" "${0%%.jpeg}.jpeg"' {} \;
+find "$dir" -name '*.jpeg' -exec sh -c 'convert -resize 25% "$0" "${0%%.jpeg}.jpeg"' {} \;
 
 #Converts all JPEG pictures in the directory to WebP pictures at 75% quality. My test seem to indicate WebP images at 75% quality are ≈ JPEG images at 80% quality.
 
 echo "Creating WebP images."
-find "$PICTURES" -name '*.jpg' -exec sh -c 'cwebp -quiet -mt -q 75 -m 6 "$0" -o "${0%%.jpg}.webp"' {} \;
+find "$dir" -name '*.jpg' -exec sh -c 'cwebp -quiet -mt -q 75 -m 6 "$0" -o "${0%%.jpg}.webp"' {} \;
 
 #Same as above but with the .jpeg file extension instead of the .jpg file extension. This does nothing if they are all in the .jpg file extension.
 
-find "$PICTURES" -name '*.jpeg' -exec sh -c 'cwebp -quiet -mt -q 75 -m 6 "$0" -o "${0%%.jpeg}.webp"' {} \;
+find "$dir" -name '*.jpeg' -exec sh -c 'cwebp -quiet -mt -q 75 -m 6 "$0" -o "${0%%.jpeg}.webp"' {} \;
 
 #Takes all JPEG pictures in the directory and encodes them at 80% quality.
 
 echo "Encoding JPEG pictures to 80% quality."
-find "$PICTURES" -name '*.jpg' -exec sh -c 'convert -quality 80 "$0" "${0%%.jpg}.jpg"' {} \;
+find "$dir" -name '*.jpg' -exec sh -c 'convert -quality 80 "$0" "${0%%.jpg}.jpg"' {} \;
 
 #Same as above but with the .jpeg file extension instead of the .jpg file extension. This does nothing if they are all in the .jpg file extension.
 
-find "$PICTURES" -name '*.jpeg' -exec sh -c 'convert -quality 80 "$0" "${0%%.jpeg}.jpeg"' {} \;
+find "$dir" -name '*.jpeg' -exec sh -c 'convert -quality 80 "$0" "${0%%.jpeg}.jpeg"' {} \;
 
 #Takes all JPEG images in the directory and strips all metadata, adds progressive mode (if needed) and "optimizes" them with jpegoptim's lossless optimization.
 
 echo "Running the JPEG images through jpegoptim."
-find "$PICTURES" -name '*.jpg' -exec sh -c 'jpegoptim --quiet --strip-all --all-progressive "$0" "${0%%.jpg}.jpg"' {} \;
+find "$dir" -name '*.jpg' -exec sh -c 'jpegoptim --quiet --strip-all --all-progressive "$0" "${0%%.jpg}.jpg"' {} \;
 
 #Same as above but with the .jpeg file extension instead of the .jpg file extension. This does nothing if they are all in the .jpg file extension.
 
-find "$PICTURES" -name '*.jpeg' -exec sh -c 'jpegoptim --quiet --strip-all --all-progressive "$0" "${0%%.jpeg}.jpeg"' {} \;
+find "$dir" -name '*.jpeg' -exec sh -c 'jpegoptim --quiet --strip-all --all-progressive "$0" "${0%%.jpeg}.jpeg"' {} \;
 
 echo Done.
 exit;
